@@ -1,3 +1,5 @@
+
+// MO's algorithm to solve D-Query(Spoj Question)
 #define ll long long
 #define lld long double
 #define cn(n)  ll n;cin >> n;
@@ -27,8 +29,14 @@ ll power(ll x, ll y, ll p){ll res = 1;x %= p;while (y > 0){if (y & 1)res = (res 
 ll po(ll base, ll powerRaised){if (powerRaised != 0)return (base * po(base, powerRaised - 1));else return 1;}
 ll gcd(ll a, ll b){if (b == 0)return a;return gcd(b, a % b);}
 ll lcm(ll a, ll b){return (a * b) / gcd(a, b);}
+int block;
+bool mycomp(pair<int,int>a,pair<int,int>b)
+{
+  if(a.ff/block == b.ff/block)
+  return a.ss < b.ss; 
 
-
+  return a.ff/block < b.ff/block;
+}
 int main()
 {
   ios_base::sync_with_stdio(false);
@@ -38,59 +46,69 @@ int main()
   freopen("input.txt", "r", stdin);
   freopen("output.txt", "w", stdout);
 #endif //*
-	ll t;
-  cin>>t;
-  int tp=t;
-  while(t--)
+  ll n,q;
+  cin>>n>>q;
+  int a[n];
+  for(int i=0;i<n;i++)
+  cin>>a[i];
+  vector<pii>v,queries;
+  map<pii,int>mpp;
+  rep(i,0,q-1)
   {
-    ll n;
-    cin>>n;
-    vector<ll>v[n+1];
-    vector<ll>res;
-    rep(i,0,n-1)
-    {
-      ll x;
-      cin>>x;
-      v[x].pb(i);
-      res.pb(x);
-    }
-    if(tp-t==64)
-    {
-      rep(i,0,n-1)
-      cout<<res[i]<<" ";
-    }
-    ll dp[n+1]={0};
-    ll ans=0;
-    rep(i,1,n)
-    {
-      int m=v[i].size();
-      if(v[i].size()>1)
-      {
-        rep(j,0,m-2)
-        {
-          int p1=v[i][j];
-          int p2=v[i][j+1];
-          rep(k,p1+1,p2-1)
-          {
-            int num=res[k];
-            auto itr=lower_bound(al(v[num]),p2+1);
-            int siz=v[num].end()-itr;
-            dp[p2]+=(siz*(j+1));
-          }
-          if(p2-p1==1)
-          dp[p2]=dp[p1];
-
-          // dp[p2]+=dp[p1];
-          ans+=dp[p2];
-        }
-      }
-      ll prod=(m*(m-1)*(m-2)*(m-3))/24;
-      ans+=max(prod,0ll);
-    }
-    
-    cout<<ans<<endl;
-
+    int x,y;
+    cin>>x>>y;
+    x--;y--;
+    v.pb(mp(x,y));
+    queries.pb(mp(x,y));
+    mpp[mp(x,y)]=0;
   }
+  block=sqrt(n);
+  sort(al(v),mycomp);
+  int s,e;
+  e=-1;s=0;
+  int freq[n+1]={0};
+  int cnt=0;
+  for(auto itr:v)
+  {
+    int l=itr.ff;
+    int r=itr.ss;
+    
+    while(e<r)
+    {
+      e++;
+      freq[a[e]]++;
+      if(freq[a[e]]==1)
+      cnt++;
+    }
+    while(e>r)
+    {
+      freq[a[e]]--;
+      if(freq[a[e]]==0)
+      cnt--;
+      e--;
+    }
+    while(s<l)
+    {
+      freq[a[s]]--;
+      if(freq[a[s]]==0)
+      cnt--;
+      s++;
+    }
+    while(s>l)
+    {
+      s--;
+      freq[a[s]]++;
+      if(freq[a[s]]==1)
+      cnt++;
+    }
+    mpp[mp(l,r)]=cnt;
+  }
+  for(auto itr:queries)
+  cout<<mpp[mp(itr.ff,itr.ss)]<<endl;
+  
+
+
+	
 	
 	
 }

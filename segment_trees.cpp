@@ -1,83 +1,73 @@
-#define ll long long
-#define MOD 1000000007 
-#define mp make_pair
-#define pb push_back
-#define ff first
-#define ss second
-#include <bits/stdc++.h>
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+#define MAX_TREE_SIZE 270000
+#define SIZE 100000
+
 using namespace std;
-int seg_tree(ll segt[] ,int a[], int start , int end, int pos)
+
+int arr[SIZE], segmentTree[MAX_TREE_SIZE];
+
+int prepareTreeUtil(int x, int y, int index)
 {
-    int mid;
-    if(start == end)
-    segt[pos] = a[start];
-    else
+    if (x == y)
     {
-        mid=(start+end)/2;
-        segt[pos] = seg_tree(segt,a,start,mid,2*pos+1)+seg_tree(segt,a,mid+1,end,2*pos+2);
+        segmentTree[index] = arr[x];
+        //cout << x << " " << y << " " << index << " " << segmentTree[index] << endl;
+        return segmentTree[index];
     }
-    return segt[pos];
+    int m = (x + y) / 2;
+    int leftChild = 2 * index + 1;
+    int rightChild = 2 * index + 2;
+    int leftMin = prepareTreeUtil(x, m, leftChild);
+    int rightMin = prepareTreeUtil(m + 1, y, rightChild);
+    segmentTree[index] = max(leftMin, rightMin);
+    //cout << x << " " << y << " " << index << " " << segmentTree[index] << endl;
+    return segmentTree[index];
 }
 
-
-int update(ll segt[] , int start, int end, int targ, int pos)
+void prepareTree(int n)
 {
-    int mid;
-    if(start==end && start==targ)
-    {
-        if(segt[pos]==1)
-        segt[pos]=-1;
-        else 
-        segt[pos]=1;
-    }
-    else
-    {
-        mid=(start+end)/2;
-        if(targ<=mid)
-        segt[pos]= update(segt,start,mid,targ,2*pos+1) + segt[2*pos+2];
-        else 
-        segt[pos]= update(segt,mid+1,end,targ,2*pos+2) + segt[2*pos+1];
-    }
-    return segt[pos];
+    prepareTreeUtil(0, n - 1, 0);
 }
 
-int main() {
-  ios_base::sync_with_stdio(false);
-  cin.tie(NULL);
-  cout.tie(NULL);
-  ll n,m,x;int a[30009];
-  int t=10;
-  while(t--)
-  {
-  cout<<"Test "<<10-t<<":"<<endl;
-  cin>>n;
-  ll segt[100009];
-  for(int i=0;i<=n;i++)
-  a[i]=0;
-  char ch;
-  for(int i=0;i<n;i++)
-  {
-      cin>>ch;
-      if(ch=='(')
-      a[i]=1;
-      else 
-      a[i]=-1;
-  }
-  seg_tree(segt,a,0,n-1,0);
-  cin>>m;
-  for(int i=0;i<m;i++)
-  {
-      cin>>x;
-      if(x)
-        update(segt,0,n-1,x-1,0);
-      else
-      {
-        if(segt[0]==0)
-        cout<<"YES"<<endl;
-        else 
-        cout<<"NO"<<endl;
-      }
-  }
-  }
-  return 0;
+int queryTreeUtil(int x, int y, int left, int right, int index)
+{
+    if (x == left && y == right)
+        return segmentTree[index];
+    int mid = (left + right) / 2;
+    int leftChild = 2 * index + 1;
+    int rightChild = 2 * index + 2;
+    if (y <= mid)
+        return queryTreeUtil(x, y, left, mid, leftChild);
+    if (x > mid)
+        return queryTreeUtil(x, y, mid + 1, right, rightChild);
+    int leftMin = queryTreeUtil(x, mid, left, mid, leftChild);
+    int rightMin = queryTreeUtil(mid + 1, y, mid + 1, right, rightChild);
+    return max(leftMin, rightMin);
+}
+
+int queryTree(int x, int y, int n)
+{
+    return queryTreeUtil(x, y, 0, n - 1, 0);
+}
+
+int main()
+{
+
+    int n;
+    scanf("%d", &n);
+    for (int i = 0; i < n; i++)
+        scanf("%d", &arr[i]);
+    prepareTree(n);
+    int q, x, y;
+    scanf("%d", &q);
+    while (q--)
+    {
+        scanf("%d%d", &x, &y);
+        if (x > y)
+            swap(x, y);
+        printf("%d\n", queryTree(x, y, n));
+    }
+    return 0;
 }
